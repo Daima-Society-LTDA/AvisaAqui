@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <ul>
+            <li><a href="{% url 'cadastro_usuario' %}">CADASTRAR</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+        </ul>
+    </header>
+    <main>
+        {% block conteudo %}
+        {% endblock %}
+    </main>
+    <footer>
+        &copy;DaimaTech
+    </footer>
+</body>
+</html>
