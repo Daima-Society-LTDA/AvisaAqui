@@ -7,10 +7,15 @@
 </head>
 <body>
     <header>
-        <ul>
-            <li><a href="{% url 'cadastro_usuario' %}">CADASTRAR</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-        </ul>
+        <h2>
+            <a href="{% url 'home' %}">AvisaAqui</a>
+        </h2>
+        <nav>
+            <ul>
+                <li><a href="{% url 'cadastro_usuario' %}">CADASTRAR</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
+            </ul>
+        </nav>
     </header>
     <main>
         {% block conteudo %}
