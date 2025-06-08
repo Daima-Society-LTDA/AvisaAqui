@@ -6,7 +6,7 @@
     <h1 class="titulo">Login</h1>
     <form action="{% url 'login' %}" method="post" class="form">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ formLogin.as_p }}
             <button type="submit" class="form-button">
                 Entrar
             </button>

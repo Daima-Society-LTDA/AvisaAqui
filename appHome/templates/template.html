@@ -12,8 +12,13 @@
         </h2>
         <nav>
             <ul>
-                <li><a href="{% url 'cadastro_usuario' %}">CADASTRAR</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
+                {% if request.session.email %}
+                    <li>Olá, {{ request.session.nome }}!</li>
+                    <li><a href="{% url 'logout' %}">Sair (Logout)</a></li>
+                {% else %}
+                    <li><a href="{% url 'cadastro_usuario' %}">CADASTRAR</a></li>
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>

@@ -1,21 +1,12 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import Usuario
+from appHome.models import Usuario
 
-@admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
         # Campos que você quer exibir na lista do admin
-    list_display = ('username', 'email', 'is_staff', 'is_active')
+    list_display = ('id','nome_usuario', 'email', 'senha')
 
-    list_filter = ('is_staff', 'is_active', 'groups')
+    list_filter = ('id', 'nome_usuario')
 
-    # Campos para pesquisa
-    search_fields = ('username', 'email', 'first_name', 'last_name')
+    search_fields = ('nome_usuario', 'email')
 
-    fieldsets = UserAdmin.fieldsets + (
-        (('Informações Adicionais'), {'fields': ('foto', 'descricao')}),
-    )
-
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (('Informações Adicionais'), {'fields': ('foto', 'descricao')}),
-    )
+admin.site.register(Usuario, UsuarioAdmin)
