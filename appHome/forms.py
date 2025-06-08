@@ -1,5 +1,5 @@
 from django import forms
-from appHome.models import Usuario
+from appHome.models import Usuario, Ocorrencia
 
 class UsuarioForm(forms.ModelForm):
     class Meta:
@@ -42,3 +42,12 @@ class UsuarioLoginForm(forms.Form):
         label="Senha",
         widget=forms.PasswordInput(attrs={'type': 'password', 'class': 'form-input'})
     )
+
+class OcorrenciaForm(forms.ModelForm):
+    class Meta:
+        model = Ocorrencia
+        fields = ('titulo', 'descricao', 'bairro')
+        widgets = {
+            'titulo' : forms.TextInput(attrs={'class': 'form-input'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-textArea'}),
+        }

@@ -1,9 +1,20 @@
-<!-- appHome/templates/appHome/home.html -->
 {% extends 'template.html' %}
+{% load tz %}
 
 {% block titulo %}Página Inicial{% endblock %}
 
 {% block conteudo %}
-    <h2>Bem-vindo ao site!</h2>
-    <p>Este é o início da sua aplicação.</p>
+    <h2>Cadastre uma ocorrencia</h2>
+    <div class="wrapper">
+        <form class="wrapper-form" action="{% url 'home' %}" method="POST">
+            {% csrf_token %}
+            {{ form_ocorrencia.as_p }}
+            <button type="submit">Publicar</button>
+        </form> 
+    </div>
+    {% for ocorrencia in ocorrencias %}
+        {{ ocorrencia.titulo }}
+        {{ ocorrencia.usuario.nome_usuario }}
+        {{ ocorrencia.data_ocorrencia|localtime|date:"d/m/Y H:i" }} (Horário de São Paulo)
+    {% endfor %}
 {% endblock %}

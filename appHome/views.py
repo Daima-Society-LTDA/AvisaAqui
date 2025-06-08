@@ -1,11 +1,45 @@
+from appHome.forms import UsuarioForm, UsuarioLoginForm, OcorrenciaForm
 from datetime import timedelta
 from django.shortcuts import render, redirect
-from appHome.forms import UsuarioForm, UsuarioLoginForm
 
-from .models import Usuario
+from .models import Usuario, Ocorrencia
 
 def home(request):
-    return render(request, 'home.html')
+    form_ocorrencia = OcorrenciaForm()
+    usuario_logado = None
+    if 'email' in request.session:
+        try:
+            usuario_logado = Usuario.objects.get(email=request.session['email'])
+        except Usuario.DoesNotExist:
+            request.session.flush()
+            return redirect('login')
+
+    if request.method == 'POST':
+        if 'titulo' in request.POST and 'descricao' in request.POST: 
+            form_ocorrencia = OcorrenciaForm(request.POST)
+            if form_ocorrencia.is_valid():
+                if usuario_logado:
+                    ocorrencia = form_ocorrencia.save(commit=False)
+                    ocorrencia.usuario = usuario_logado
+                    ocorrencia.save()
+                    
+                    return redirect('home')
+                else:
+                    form_ocorrencia.add_error(None, "Você precisa estar logado para postar uma ocorrência.")
+            
+    ocorrencias = Ocorrencia.objects.all().order_by('-data_ocorrencia') # Pega todas as ocorrências mais recentes
+    
+    # Exemplo: Filtrar ocorrências por bairro (se você tiver um campo de busca)
+    # bairro_busca = request.GET.get('bairro_busca')
+    # if bairro_busca:
+    #     ocorrencias = ocorrencias.filter(Q(bairro__nome__icontains=bairro_busca))
+    
+    dados = {
+        'form_ocorrencia': form_ocorrencia,
+        'usuario_logado': usuario_logado,
+        'ocorrencias': ocorrencias,
+    }
+    return render(request, 'home.html', dados)
 
 def cadastrar_usuario(request):
     if request.method == 'POST':
@@ -29,7 +63,7 @@ def login_view(request):
             try:
                 usuario_login = Usuario.objects.get(email=_email, senha=_senha)
                 if usuario_login is not None:
-                    request.session.set_expiry(timedelta(seconds=15))
+                    request.session.set_expiry(timedelta(minutes=15))
                     request.session['email'] = _email
                     request.session['nome'] = usuario_login.nome_usuario
                     return redirect("home")
