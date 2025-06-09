@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.templatetags.static import static
+from django.utils import timezone
 
 from .models import Usuario, Ocorrencia
 
@@ -65,6 +66,10 @@ def login_view(request):
                     request.session.set_expiry(timedelta(minutes=15))
                     request.session['email'] = _email
                     request.session['nome'] = usuario_login.nome_usuario
+                    if usuario_login.foto:
+                        request.session["foto_perfil_url"] = usuario_login.foto.url
+                    else:
+                        request.session["foto_perfil_url"] = static('img/icon-user.png')
                     return redirect("home")
             except Usuario.DoesNotExist:
                 formLogin.add_error(None, "Email ou senha inválidos.")
@@ -88,7 +93,7 @@ def get_comentarios_ocorrencia(request, ocorrencia_id):
             'descricao': comentario.descricao_comentario,
             'usuario_nome': comentario.usuario.nome_usuario,
             'data': comentario.data_comentario.strftime("%d/%m/%Y %H:%M"), # Formata a data
-            'usuario_foto_url': comentario.usuario.foto.url if comentario.usuario.foto else static('default_profile.png') # Adapte para o seu campo de foto
+            'usuario_foto_url': comentario.usuario.foto.url if comentario.usuario.foto else static('/img/icon-user.png') # Adapte para o seu campo de foto
         })
     
     return JsonResponse({'comentarios': comentarios_data})
@@ -113,12 +118,14 @@ def adicionar_comentario(request, ocorrencia_id):
         comentario.usuario = usuario_logado
         comentario.save()
 
+        data_local_comentario = timezone.localtime(comentario.data_comentario)
+
         response_data = {
             'success': True,
             'comentario': {
                 'descricao': comentario.descricao_comentario,
                 'usuario_nome': comentario.usuario.nome_usuario,
-                'data': comentario.data_comentario.strftime("%d/%m/%Y %H:%M"),
+                'data': data_local_comentario.strftime("%d/%m/%Y %H:%M"),
                 'usuario_foto_url': comentario.usuario.foto.url if comentario.usuario.foto else static('img/icon-user.png')
             }
         }

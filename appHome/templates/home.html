@@ -6,7 +6,6 @@
 {% block titulo %} Página Inicial {% endblock %}
 
 {% block conteudo %}
-    <h2>Cadastre uma ocorrência</h2>
     <div class="container">
         <div class="columns is-centered">
             <div class="column is-half">
@@ -66,11 +65,11 @@
                 <div class="box mb-5">
                     <article class="media">
                         <div class="media-left">
-                            <figure class="image is-48x48">
-                                {% if ocorrencia.usuario.foto_perfil %} {# Garanta que 'foto_perfil' é o nome correto do campo no seu modelo Usuario #}
-                                    <img class="is-rounded" src="{{ ocorrencia.usuario.foto_perfil.url }}" alt="Foto de perfil de {{ ocorrencia.usuario.nome_usuario }}">
+                            <figure class="image is-64x64">
+                                {% if ocorrencia.usuario.foto %}
+                                    <img class="is-rounded" src="{{ ocorrencia.usuario.foto.url }}" alt="Foto de perfil de {{ ocorrencia.usuario.nome_usuario }}">
                                 {% else %}
-                                    <img class="is-rounded" src="{% static 'default_profile.png' %}" alt="Foto padrão"> 
+                                    <img class="is-rounded" src="{% static 'img/icon-user.png' %}" alt="Foto padrão"> 
                                 {% endif %}
                             </figure>
                         </div>
@@ -89,26 +88,11 @@
                             </div>
                             <nav class="level is-mobile">
                                 <div class="level-left">
-                                    <a class="level-item" aria-label="reply">
-                                        <span class="icon is-small">
-                                            <i class="fas fa-reply" aria-hidden="true"></i>
-                                        </span>
-                                    </a>
-                                    <a class="level-item" aria-label="retweet">
-                                        <span class="icon is-small">
-                                            <i class="fas fa-retweet" aria-hidden="true"></i>
-                                        </span>
-                                    </a>
-                                    <a class="level-item" aria-label="like">
-                                        <span class="icon is-small">
-                                            <i class="fas fa-heart" aria-hidden="true"></i>
-                                        </span>
-                                    </a>
                                     <a class="level-item comentarios-btn" data-ocorrencia-id="{{ ocorrencia.id }}">
                                         <span class="icon is-medium">
                                             <img src="{% static 'img/chat_azul.png' %}" alt="Ícone de chat">
                                         </span>
-                                        <span>Comentários ({{ ocorrencia.comentarios.count }})</span>
+                                        <span>  ({{ ocorrencia.comentarios.count }})</span>
                                     </a>
                                 </div>
                             </nav>
@@ -119,29 +103,28 @@
                 <p class="has-text-centered is-size-5">Nenhuma ocorrência encontrada ainda. Seja o primeiro a postar!</p>
             {% endfor %}
         </div>
-    </div> {# Fim do container #}
+    </div>
 
     <div id="comentarios-modal" class="modal">
         <div class="modal-background"></div>
-        <div class="modal-card is-7-desktop is-8-tablet is-fullwidth-mobile"> {# is-7-desktop para 70% da largura, is-8-tablet para 80%, fullwidth em mobile #}
+        <div class="modal-card is-7-desktop is-8-tablet is-fullwidth-mobile">
             <header class="modal-card-head">
-                <p class="modal-card-title">Comentários da Ocorrência</p>
+                <p class="modal-card-title ">Comentários da Ocorrência</p>
                 <button class="delete" aria-label="close"></button>
             </header>
-            <section class="modal-card-body" style="max-height: 70vh; overflow-y: auto;"> {# Scroll Y e altura máxima #}
+            <section class="modal-card-body" style="max-height: 70vh; overflow-y: auto;">
                 <div id="comentarios-list">
                     {# Comentários serão carregados aqui via JavaScript #}
                     <p class="has-text-centered">Carregando comentários...</p>
                 </div>
             </section>
             <footer class="modal-card-foot">
-                {% if usuario_logado %} {# Somente mostra o formulário de comentário se o usuário estiver logado #}
+                {% if usuario_logado %}
                     <form id="form-adicionar-comentario" style="width: 100%;">
                         {% csrf_token %}
-                        <input type="hidden" name="ocorrencia_id_modal" id="ocorrencia-id-modal"> {# Campo oculto para o ID da ocorrência #}
+                        <input type="hidden" name="ocorrencia_id_modal" id="ocorrencia-id-modal">
                         <div class="field is-grouped is-grouped-multiline is-fullwidth">
                             <div class="control is-expanded">
-                                {# O textarea para o comentário será renderizado aqui #}
                                 <textarea class="textarea" name="descricao_comentario" placeholder="Adicione um comentário..."></textarea>
                             </div>
                             <div class="control">
@@ -223,8 +206,7 @@
             // Função para fechar o modal
             function closeModal() {
                 comentariosModal.classList.remove('is-active');
-                comentariosList.innerHTML = ''; // Limpa a lista de comentários ao fechar
-                // Limpa o textarea do comentário se houver um
+                comentariosList.innerHTML = ''; 
                 const comentarioTextarea = formAdicionarComentario ? formAdicionarComentario.querySelector('textarea[name="descricao_comentario"]') : null;
                 if (comentarioTextarea) {
                     comentarioTextarea.value = '';

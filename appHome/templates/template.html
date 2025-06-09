@@ -11,8 +11,17 @@
     <link rel="stylesheet" href="{% static 'reset.css' %}">
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <style>
-        header, .navbar-brand, .navbar-item{
-            height: auto !important;
+        .navbar-brand .navbar-item .logo-navbar {
+            height: 80px;
+            width: auto;
+            max-height: 100%;
+        }
+        .navbar-brand {
+            align-items: center;
+            min-height: 64px;
+        }
+        .navbar {
+            min-height: 64px;
         }
     </style>
 </head>
@@ -20,7 +29,7 @@
     <header class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item" href="{% url 'home' %}">
-                <img width="100px" src="{% static 'img/logo_horizontal.png' %}" alt="logo avisa aqui">
+                    <img class="logo-navbar" src="{% static 'img/logo_horizontal.png' %}" alt="logo avisa aqui">
             </a>
             <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
                 <span aria-hidden="true"></span>
@@ -30,23 +39,20 @@
         </div>
 
         <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-end"> {# Alinha itens à direita #}
+            <div class="navbar-end">
                 <div class="navbar-item">
                     {% if request.session.email %}
-                        {# Se o usuário está logado, mostra o dropdown com a foto dele #}
-                        <div class="dropdown is-right" id="user-dropdown"> {# is-right alinha o dropdown à direita do botão #}
+                        <div class="dropdown is-right" id="user-dropdown">
                             <div class="dropdown-trigger">
                                 <button class="button is-ghost has-text-white" aria-haspopup="true" aria-controls="dropdown-menu">
-                                    <figure class="image is-32x32 mr-2"> {# mr-2 adiciona margem à direita #}
-                                        {# Verifica se o usuário tem foto de perfil #}
+                                    <figure class="image is-32x32 mr-2">
                                         {% if request.session.foto_perfil_url %}
                                             <img class="is-rounded" src="{{ request.session.foto_perfil_url }}" alt="Foto de Perfil">
                                         {% else %}
-                                            {# Foto genérica se não houver foto de perfil #}
-                                            <img class="is-rounded" src="{% static 'default_profile.png' %}" alt="Foto Padrão">
+                                            <img class="is-rounded" src="{% static 'img/icon-user.png' %}" alt="Foto Padrão">
                                         {% endif %}
                                     </figure>
-                                    <span class="has-text-white is-hidden-touch">{{ request.session.nome }}</span> {# Esconde o nome em mobile #}
+                                    <span class="has-text-white is-hidden-touch">{{ request.session.nome }}</span>
                                     <span class="icon is-small has-text-white">
                                         <i class="fas fa-angle-down" aria-hidden="true"></i>
                                     </span>
