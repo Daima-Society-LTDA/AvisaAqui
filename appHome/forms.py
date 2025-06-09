@@ -1,26 +1,26 @@
 from django import forms
-from appHome.models import Usuario, Ocorrencia
+from appHome.models import Usuario, Ocorrencia, Comentario
 
 class UsuarioForm(forms.ModelForm):
     class Meta:
         model = Usuario
-        fields = ('nome_usuario', 'email', 'senha', 'descricao')
+        fields = ('nome_usuario', 'email', 'descricao', 'senha', 'foto',)
 
         widgets = {
-            'nome_usuario': forms.TextInput(attrs={'class': 'form-input'}),
-            'email': forms.EmailInput(attrs={'class': 'form-input'}),
-            'foto': forms.FileInput(attrs={'accept': 'image/*', 'class': 'form-input'}),
-            'descricao': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
+            'nome_usuario': forms.TextInput(attrs={'class': 'input'}),
+            'email': forms.EmailInput(attrs={'class': 'input'}),
+            'foto': forms.FileInput(attrs={'accept': 'image/*', 'class': 'input'}),
+            'descricao': forms.Textarea(attrs={'class': 'textarea', 'rows': 4}),
         }
 
     # Senha e Confirmação de Senha separadas para segurança e validação
     senha = forms.CharField(
         label="Senha",
-        widget=forms.PasswordInput(attrs={'class': 'form-input'})
+        widget=forms.PasswordInput(attrs={'class': 'input'})
     )
     confirmar_senha = forms.CharField(
         label="Confirmar Senha",
-        widget=forms.PasswordInput(attrs={'class': 'form-input'})
+        widget=forms.PasswordInput(attrs={'class': 'input'})
     )
 
     # Validação customizada para garantir que as senhas são iguais
@@ -36,11 +36,11 @@ class UsuarioForm(forms.ModelForm):
 class UsuarioLoginForm(forms.Form):
     email = forms.EmailField(
         label="Email",
-        widget=forms.EmailInput(attrs={'type': 'email', 'class': 'form-input'})
+        widget=forms.EmailInput(attrs={'type': 'email', 'class': 'input'})
     )
     senha = forms.CharField(
         label="Senha",
-        widget=forms.PasswordInput(attrs={'type': 'password', 'class': 'form-input'})
+        widget=forms.PasswordInput(attrs={'type': 'password', 'class': 'input'})
     )
 
 class OcorrenciaForm(forms.ModelForm):
@@ -48,6 +48,14 @@ class OcorrenciaForm(forms.ModelForm):
         model = Ocorrencia
         fields = ('titulo', 'descricao', 'bairro')
         widgets = {
-            'titulo' : forms.TextInput(attrs={'class': 'form-input'}),
-            'descricao': forms.Textarea(attrs={'class': 'form-textArea'}),
+            'titulo' : forms.TextInput(attrs={'class': 'input'}),
+            'descricao': forms.Textarea(attrs={'class': 'textarea'}),
+        }
+    
+class ComentarioForm(forms.ModelForm):
+    class Meta:
+        model = Comentario
+        fields = ('descricao_comentario', )
+        widgets = {
+            'descricao_comentario' : forms.Textarea(attrs={'class': 'textarea', 'rows' : 3})
         }

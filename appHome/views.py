@@ -1,6 +1,10 @@
-from appHome.forms import UsuarioForm, UsuarioLoginForm, OcorrenciaForm
+from appHome.forms import UsuarioForm, UsuarioLoginForm, OcorrenciaForm, ComentarioForm
 from datetime import timedelta
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST, require_GET 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.templatetags.static import static
 
 from .models import Usuario, Ocorrencia
 
@@ -27,12 +31,7 @@ def home(request):
                 else:
                     form_ocorrencia.add_error(None, "Você precisa estar logado para postar uma ocorrência.")
             
-    ocorrencias = Ocorrencia.objects.all().order_by('-data_ocorrencia') # Pega todas as ocorrências mais recentes
-    
-    # Exemplo: Filtrar ocorrências por bairro (se você tiver um campo de busca)
-    # bairro_busca = request.GET.get('bairro_busca')
-    # if bairro_busca:
-    #     ocorrencias = ocorrencias.filter(Q(bairro__nome__icontains=bairro_busca))
+    ocorrencias = Ocorrencia.objects.all().order_by('-data_ocorrencia')
     
     dados = {
         'form_ocorrencia': form_ocorrencia,
@@ -77,3 +76,52 @@ def login_view(request):
 def logout(request):
     request.session.flush()
     return redirect("login")
+
+@require_GET
+def get_comentarios_ocorrencia(request, ocorrencia_id):
+    ocorrencia = get_object_or_404(Ocorrencia, pk=ocorrencia_id)
+    comentarios = ocorrencia.comentarios.all().order_by('data_comentario')
+    
+    comentarios_data = []
+    for comentario in comentarios:
+        comentarios_data.append({
+            'descricao': comentario.descricao_comentario,
+            'usuario_nome': comentario.usuario.nome_usuario,
+            'data': comentario.data_comentario.strftime("%d/%m/%Y %H:%M"), # Formata a data
+            'usuario_foto_url': comentario.usuario.foto.url if comentario.usuario.foto else static('default_profile.png') # Adapte para o seu campo de foto
+        })
+    
+    return JsonResponse({'comentarios': comentarios_data})
+
+@require_POST # Esta view só aceita requisições POST
+def adicionar_comentario(request, ocorrencia_id):
+    ocorrencia = get_object_or_404(Ocorrencia, pk=ocorrencia_id)
+    usuario_logado = None
+
+    if 'email' in request.session:
+        try:
+            usuario_logado = Usuario.objects.get(email=request.session['email'])
+        except Usuario.DoesNotExist:
+            return JsonResponse({'success': False, 'errors': 'Usuário não logado.'}, status=401)
+    else:
+        return JsonResponse({'success': False, 'errors': 'Você precisa estar logado para comentar.'}, status=401)
+
+    form_comentario = ComentarioForm(request.POST)
+    if form_comentario.is_valid():
+        comentario = form_comentario.save(commit=False)
+        comentario.ocorrencia = ocorrencia
+        comentario.usuario = usuario_logado
+        comentario.save()
+
+        response_data = {
+            'success': True,
+            'comentario': {
+                'descricao': comentario.descricao_comentario,
+                'usuario_nome': comentario.usuario.nome_usuario,
+                'data': comentario.data_comentario.strftime("%d/%m/%Y %H:%M"),
+                'usuario_foto_url': comentario.usuario.foto.url if comentario.usuario.foto else static('img/icon-user.png')
+            }
+        }
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'success': False, 'errors': form_comentario.errors.as_json()}, status=400) # Retorna erros do formulário

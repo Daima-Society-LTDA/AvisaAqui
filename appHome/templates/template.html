@@ -1,27 +1,88 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block titulo %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'reset.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        header, .navbar-brand, .navbar-item{
+            height: auto !important;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h2>
-            <a href="{% url 'home' %}">AvisaAqui</a>
-        </h2>
-        <nav>
-            <ul>
-                {% if request.session.email %}
-                    <li>Olá, {{ request.session.nome }}!</li>
-                    <li><a href="{% url 'logout' %}">Sair (Logout)</a></li>
-                {% else %}
-                    <li><a href="{% url 'cadastro_usuario' %}">CADASTRAR</a></li>
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+    <header class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="{% url 'home' %}">
+                <img width="100px" src="{% static 'img/logo_horizontal.png' %}" alt="logo avisa aqui">
+            </a>
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-end"> {# Alinha itens à direita #}
+                <div class="navbar-item">
+                    {% if request.session.email %}
+                        {# Se o usuário está logado, mostra o dropdown com a foto dele #}
+                        <div class="dropdown is-right" id="user-dropdown"> {# is-right alinha o dropdown à direita do botão #}
+                            <div class="dropdown-trigger">
+                                <button class="button is-ghost has-text-white" aria-haspopup="true" aria-controls="dropdown-menu">
+                                    <figure class="image is-32x32 mr-2"> {# mr-2 adiciona margem à direita #}
+                                        {# Verifica se o usuário tem foto de perfil #}
+                                        {% if request.session.foto_perfil_url %}
+                                            <img class="is-rounded" src="{{ request.session.foto_perfil_url }}" alt="Foto de Perfil">
+                                        {% else %}
+                                            {# Foto genérica se não houver foto de perfil #}
+                                            <img class="is-rounded" src="{% static 'default_profile.png' %}" alt="Foto Padrão">
+                                        {% endif %}
+                                    </figure>
+                                    <span class="has-text-white is-hidden-touch">{{ request.session.nome }}</span> {# Esconde o nome em mobile #}
+                                    <span class="icon is-small has-text-white">
+                                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                <div class="dropdown-content">
+                                    <a href="#" class="dropdown-item">
+                                        Meu Perfil
+                                    </a>
+                                    <a href="#" class="dropdown-item">
+                                        Configurações
+                                    </a>
+                                    <hr class="dropdown-divider">
+                                    <a href="{% url 'logout' %}" class="dropdown-item has-text-danger">
+                                        Sair (Logout)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {# Se o usuário não está logado, mostra os botões de Login e Cadastro #}
+                        <div class="buttons">
+                            <a class="button is-light" href="{% url 'cadastro_usuario' %}">
+                                <strong>CADASTRAR</strong>
+                            </a>
+                            <a class="button is-light" href="{% url 'login' %}">
+                                Login
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </header>
+
     <main>
         {% block conteudo %}
         {% endblock %}
@@ -29,5 +90,37 @@
     <footer>
         &copy;DaimaTech
     </footer>
+
+    <script>
+        // JavaScript para ativar o dropdown Bulma e o menu hambúrguer
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown do usuário
+            const userDropdown = document.getElementById('user-dropdown');
+            if (userDropdown) {
+                const dropdownTrigger = userDropdown.querySelector('.dropdown-trigger button');
+                dropdownTrigger.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Evita que o clique se propague e feche o dropdown imediatamente
+                    userDropdown.classList.toggle('is-active');
+                });
+
+                // Fecha o dropdown ao clicar fora
+                document.addEventListener('click', function(event) {
+                    if (userDropdown.classList.contains('is-active') && !userDropdown.contains(event.target)) {
+                        userDropdown.classList.remove('is-active');
+                    }
+                });
+            }
+
+            // Menu Hambúrguer (navbar-burger)
+            const navbarBurger = document.querySelector('.navbar-burger');
+            if (navbarBurger) {
+                const target = document.getElementById(navbarBurger.dataset.target);
+                navbarBurger.addEventListener('click', function() {
+                    navbarBurger.classList.toggle('is-active');
+                    target.classList.toggle('is-active');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

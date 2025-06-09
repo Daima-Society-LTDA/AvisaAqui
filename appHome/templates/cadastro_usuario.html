@@ -1,12 +1,146 @@
 {% extends 'template.html' %}
+{% load static %}
+{% load widget_tweaks %}
 
-{% block titulo %}Cadastrar Usuário{% endblock %}
+{% block titulo %} Cadastro de Usuário {% endblock %}
 
 {% block conteudo %}
-    <h2>Cadastro de Usuário</h2>
-    <form action="{% url 'cadastro_usuario' %}" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Cadastrar</button>
-    </form>
+    <div class="container is-fullhd">
+        <div class="columns is-vcentered is-centered">
+            
+            <div class="column is-half is-hidden-mobile">
+                <figure class="image is-square">
+                    <img src="{% static 'img/logo_amarela.png' %}" alt="Imagem de Cadastro"> 
+                </figure>
+            </div>
+
+            <div class="column is-half">
+                
+                <div class="box p-5">
+                    <h2 class="title is-5 has-text-centered mb-5">Cadastre-se para começar!</h2>
+                    <form action="{% url 'cadastro_usuario' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="message is-danger">
+                                <div class="message-body">
+                                    <p>Por favor, corrija os seguintes erros:</p>
+                                    <ul>
+                                        {% for error in form.non_field_errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="field">
+                            <label class="label" for="{{ form.nome_usuario.id_for_label }}">Nome de Usuário:</label>
+                            <div class="control">
+                                {{ form.nome_usuario|attr:"class:input"|attr:"placeholder:Seu nome completo" }}
+                            </div>
+                            {% for error in form.nome_usuario.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.email.id_for_label }}">Email:</label>
+                            <div class="control has-icons-left">
+                                {{ form.email|attr:"class:input"|attr:"type:email"|attr:"placeholder:seuemail@exemplo.com" }}
+                                <span class="icon is-small is-left"><i class="fas fa-envelope"></i></span>
+                            </div>
+                            {% for error in form.email.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.descricao.id_for_label }}">Sobre você (Opcional):</label>
+                            <div class="control">
+                                {{ form.descricao|attr:"class:textarea"|attr:"rows:3"|attr:"placeholder:Fale um pouco sobre você..." }}
+                            </div>
+                            {% for error in form.descricao.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="field">
+                            <label class="label" for="{{ form.foto.id_for_label }}">Foto de Perfil (Opcional):</label>
+                            <div class="control">
+                                <div class="file has-name is-fullwidth"> 
+                                    <label class="file-label">
+                                        {{ form.foto|attr:"class:file-input" }}
+                                        <span class="file-cta">
+                                            <span class="file-icon">
+                                                <i class="fas fa-upload"></i>
+                                            </span>
+                                            <span class="file-label">
+                                                Escolha uma imagem…
+                                            </span>
+                                        </span>
+                                        <span class="file-name" id="file-name-foto-perfil">
+                                            Nenhum arquivo selecionado
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            {% for error in form.foto.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.senha.id_for_label }}">Senha:</label>
+                            <div class="control has-icons-left">
+                                {{ form.senha|attr:"class:input"|attr:"type:password"|attr:"placeholder:••••••••" }}
+                                <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                            </div>
+                            {% for error in form.senha.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.confirmar_senha.id_for_label }}">Confirmar Senha:</label>
+                            <div class="control has-icons-left">
+                                {{ form.confirmar_senha|attr:"class:input"|attr:"type:password"|attr:"placeholder:••••••••" }}
+                                <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                            </div>
+                            {% for error in form.confirmar_senha.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field mt-5">
+                            <div class="control has-text-centered">
+                                <button class="button is-primary is-large is-responsive" type="submit">Cadastrar</button>
+                            </div>
+                        </div>
+
+                        <p class="has-text-centered mt-4">
+                            Já tem uma conta? <a href="{% url 'login' %}">Faça Login</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript para exibir o nome do arquivo selecionado no campo de upload do Bulma
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('#id_foto');
+            if (fileInput) {
+                fileInput.onchange = () => {
+                    if (fileInput.files.length > 0) {
+                        const fileNameSpan = document.querySelector('#file-name-foto-perfil');
+                        fileNameSpan.textContent = fileInput.files[0].name;
+                    } else {
+                        const fileNameSpan = document.querySelector('#file-name-foto-perfil');
+                        fileNameSpan.textContent = 'Nenhum arquivo selecionado';
+                    }
+                };
+            }
+        });
+    </script>
 {% endblock %}

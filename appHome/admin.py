@@ -3,7 +3,7 @@ from appHome.models import Usuario, Bairro, Ocorrencia
 
 class UsuarioAdmin(admin.ModelAdmin):
         # Campos que você quer exibir na lista do admin
-    list_display = ('id','nome_usuario', 'email', 'senha')
+    list_display = ('id','nome_usuario', 'email', 'senha', 'foto')
 
     list_filter = ('id', 'nome_usuario')
 
