@@ -106,7 +106,7 @@
             {% endfor %}
         </div>
 
-        {# --- NAVEGAÇÃO DA PAGINAÇÃO AQUI --- #}
+        {# --- NAVEGAÇÃO DA PAGINAÇÃO --- #}
         {% if ocorrencias.has_other_pages %}
             <nav class="pagination is-centered" role="navigation" aria-label="pagination">
                 {% if ocorrencias.has_previous %}
@@ -139,6 +139,191 @@
         {# --- FIM DA NAVEGAÇÃO DA PAGINAÇÃO --- #}
     </div>
 
-    {# ... Seu modal de comentários e script JS aqui ... #}
+    {# --- COLOQUE O HTML DO MODAL E O SCRIPT JAVASCRIPT AQUI DENTRO DO BLOCK CONTEUDO --- #}
+    <div id="comentarios-modal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card is-7-desktop is-8-tablet is-fullwidth-mobile">
+            <header class="modal-card-head">
+                <p class="modal-card-title ">Comentários da Ocorrência</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body" style="max-height: 70vh; overflow-y: auto;">
+                <div id="comentarios-list">
+                    {# Comentários serão carregados aqui via JavaScript #}
+                    <p class="has-text-centered">Carregando comentários...</p>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                {% if usuario_logado %}
+                    <form id="form-adicionar-comentario" style="width: 100%;">
+                        {% csrf_token %}
+                        <input type="hidden" name="ocorrencia_id_modal" id="ocorrencia-id-modal">
+                        <div class="field is-grouped is-grouped-multiline is-fullwidth">
+                            <div class="control is-expanded">
+                                <textarea class="textarea" name="descricao_comentario" placeholder="Adicione um comentário..."></textarea>
+                            </div>
+                            <div class="control">
+                                <button type="submit" class="button is-primary">Comentar</button>
+                            </div>
+                        </div>
+                    </form>
+                {% else %}
+                    <p class="has-text-centered">Você precisa estar logado para adicionar comentários. <a href="{% url 'login' %}">Faça Login</a></p>
+                {% endif %}
+            </footer>
+        </div>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const comentariosModal = document.getElementById('comentarios-modal');
+            const modalBackground = comentariosModal.querySelector('.modal-background');
+            const modalCloseBtn = comentariosModal.querySelector('.delete');
+            const comentariosButtons = document.querySelectorAll('.comentarios-btn');
+            const comentariosList = document.getElementById('comentarios-list');
+            const formAdicionarComentario = document.getElementById('form-adicionar-comentario');
+            const ocorrenciaIdModalInput = document.getElementById('ocorrencia-id-modal');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value; 
+
+            let currentOcorrenciaId = null;
+
+            async function openModal(ocorrenciaId) {
+                currentOcorrenciaId = ocorrenciaId;
+                if (ocorrenciaIdModalInput) { 
+                    ocorrenciaIdModalInput.value = ocorrenciaId;
+                }
+
+                comentariosModal.classList.add('is-active');
+                comentariosList.innerHTML = '<p class="has-text-centered">Carregando comentários...</p>';
+
+                try {
+                    const response = await fetch(`/ocorrencias/${ocorrenciaId}/comentarios/`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.comentarios && data.comentarios.length > 0) {
+                        comentariosList.innerHTML = ''; 
+                        data.comentarios.forEach(comentario => {
+                            const comentarioElement = `
+                                <article class="media mb-4">
+                                    <figure class="media-left ">
+                                        <p class="image is-48x48">
+                                            <img class="is-rounded has-background-white" src="${comentario.usuario_foto_url}" alt="Foto de perfil">
+                                        </p>
+                                    </figure>
+                                    <div class="media-content">
+                                        <div class="content">
+                                            <p>
+                                                <strong>${comentario.usuario_nome}</strong>
+                                                <br>
+                                                ${comentario.descricao}
+                                                <br>
+                                                <small class="has-text-grey">${comentario.data}</small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </article>
+                            `;
+                            comentariosList.insertAdjacentHTML('beforeend', comentarioElement);
+                        });
+                    } else {
+                        comentariosList.innerHTML = '<p class="has-text-centered">Nenhum comentário ainda. Seja o primeiro!</p>';
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar comentários:', error);
+                    comentariosList.innerHTML = '<p class="has-text-centered has-text-danger">Erro ao carregar comentários.</p>';
+                }
+            }
+
+            function closeModal() {
+                comentariosModal.classList.remove('is-active');
+                comentariosList.innerHTML = ''; 
+                const comentarioTextarea = formAdicionarComentario ? formAdicionarComentario.querySelector('textarea[name="descricao_comentario"]') : null;
+                if (comentarioTextarea) {
+                    comentarioTextarea.value = '';
+                }
+                currentOcorrenciaId = null;
+            }
+
+            modalBackground.addEventListener('click', closeModal);
+            modalCloseBtn.addEventListener('click', closeModal);
+
+            comentariosButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault(); 
+                    const ocorrenciaId = this.dataset.ocorrenciaId;
+                    openModal(ocorrenciaId);
+                });
+            });
+
+            if (formAdicionarComentario) {
+                formAdicionarComentario.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    const comentarioTextarea = this.querySelector('textarea[name="descricao_comentario"]');
+                    const descricao = comentarioTextarea.value.trim();
+
+                    if (!descricao) {
+                        alert('Por favor, escreva um comentário.');
+                        return;
+                    }
+
+                    if (!currentOcorrenciaId) {
+                        alert('Erro: ID da ocorrência não encontrado para adicionar comentário.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('descricao_comentario', descricao);
+                    formData.append('csrfmiddlewaretoken', csrfToken);
+
+                    try {
+                        const response = await fetch(`/ocorrencias/${currentOcorrenciaId}/comentar/`, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            const newComentarioElement = `
+                                <article class="media mb-4">
+                                    <figure class="media-left">
+                                        <p class="image is-48x48">
+                                            <img class="is-rounded" src="${data.comentario.usuario_foto_url}" alt="Foto de perfil">
+                                        </p>
+                                    </figure>
+                                    <div class="media-content">
+                                        <div class="content">
+                                            <p>
+                                                <strong>${data.comentario.usuario_nome}</strong>
+                                                <br>
+                                                ${data.comentario.descricao}
+                                                <br>
+                                                <small class="has-text-grey">${data.comentario.data}</small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </article>
+                            `;
+                            if (comentariosList.querySelector('p.has-text-centered:not(.has-text-danger)')) {
+                                comentariosList.innerHTML = '';
+                            }
+                            comentariosList.insertAdjacentHTML('beforeend', newComentarioElement);
+                            comentarioTextarea.value = '';
+
+                        } else {
+                            alert('Erro ao adicionar comentário: ' + (data.errors ? JSON.parse(data.errors).descricao_comentario : ''));
+                            console.error('Erro na resposta:', data);
+                        }
+                    } catch (error) {
+                        console.error('Erro na requisição AJAX para adicionar comentário:', error);
+                        alert('Ocorreu um erro ao tentar adicionar o comentário.');
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}
