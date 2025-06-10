@@ -43,6 +43,44 @@ class UsuarioLoginForm(forms.Form):
         widget=forms.PasswordInput(attrs={'class': 'input'})
     )
 
+class UsuarioEditForm(forms.ModelForm):
+    senha = forms.CharField(
+        label="Nova Senha (deixe em branco para não alterar)",
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'input'})
+    )
+    confirmar_senha = forms.CharField(
+        label="Confirmar Nova Senha",
+        required=False, # Confirmação também não é obrigatória
+        widget=forms.PasswordInput(attrs={'class': 'input'})
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ('nome_usuario', 'email', 'descricao', 'foto', 'senha') 
+        
+        widgets = {
+            'nome_usuario': forms.TextInput(attrs={'class': 'input'}),
+            'email': forms.EmailInput(attrs={'class': 'input'}),
+            'foto': forms.FileInput(attrs={'accept': 'image/*', 'class': 'input'}),
+            'descricao': forms.Textarea(attrs={'class': 'textarea', 'rows': 4}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nova_senha = cleaned_data.get('senha')
+        confirm_senha = cleaned_data.get('confirmar_senha')
+
+        if nova_senha:
+            if nova_senha and confirm_senha and nova_senha != confirm_senha:
+                self.add_error('confirmar_senha', "As novas senhas não coincidem.")
+            elif not confirm_senha:
+                self.add_error('confirmar_senha', "Por favor, confirme sua nova senha.")
+        elif confirm_senha:
+             self.add_error('senha', "Por favor, digite sua nova senha para confirmá-la.")
+             
+        return cleaned_data
+
 class OcorrenciaForm(forms.ModelForm):
     class Meta:
         model = Ocorrencia

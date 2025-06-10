@@ -1,0 +1,35 @@
+@import 'reset.css';
+
+.button-success{
+    background-color: var(--cor1);
+    border: 1px solid var(--cor1);
+    font-weight: bolder;
+}
+
+.button-success:hover{
+    background-color: transparent;
+    color: var(--cor1);
+}
+
+.button-second{
+    background-color: var(--cor2);
+    border: 1px solid var(--cor2);
+    font-weight: bolder;
+}
+
+.button-second:hover{
+    background-color: transparent;
+    color: var(--cor2);
+}
+
+.button-third{
+    background-color: var(--cor3);
+    border: 1px solid var(--cor3);
+    font-weight: bolder;
+    color: #fff;
+}
+
+.button-third:hover{
+    background-color: transparent;
+    color: var(--cor3);
+}

@@ -3,3 +3,12 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+:root{
+    --cor1: #87F1FF;
+    --cor2: #FFD23F;
+    --cor3: #8A1212;
+    --cor4: #3B0A27;
+    --cor5: #262626;
+    --cor6: #DFDFDF;
+}

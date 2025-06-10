@@ -23,6 +23,11 @@
         .navbar {
             min-height: 64px;
         }
+
+        body{
+            background-color: var(--cor5);
+            min-height: 100vh;
+        }
     </style>
 </head>
 <body>
@@ -60,7 +65,7 @@
                             </div>
                             <div class="dropdown-menu" id="dropdown-menu" role="menu">
                                 <div class="dropdown-content">
-                                    <a href="#" class="dropdown-item">
+                                    <a href="{% url 'perfil' request.session.cd_usuario %}" class="dropdown-item">
                                         Meu Perfil
                                     </a>
                                     <hr class="dropdown-divider">

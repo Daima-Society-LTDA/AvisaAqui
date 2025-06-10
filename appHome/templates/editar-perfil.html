@@ -1,0 +1,146 @@
+{% extends 'template.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block titulo %} Editar Perfil {% endblock %}
+
+{% block conteudo %}
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-two-thirds-desktop is-two-thirds-tablet is-full-mobile">
+                <div class="box p-5">
+                    <h2 class="title is-4 has-text-centered mb-5">Editar Perfil</h2>
+
+                    {# Mensagens do Django (ex: sucesso, erro) #}
+                    {% if messages %}
+                        <div class="messages mb-4">
+                            {% for message in messages %}
+                                <div class="notification {% if message.tags %}is-{{ message.tags }}{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form action="{% url 'editar_perfil' cd_usuario=usuario.id %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {# Non-field errors do formulário #}
+                        {% if form.non_field_errors %}
+                            <div class="notification is-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {# Campo Nome de Usuário #}
+                        <div class="field">
+                            <label class="label" for="{{ form.nome_usuario.id_for_label }}">Nome de Usuário:</label>
+                            <div class="control">
+                                {{ form.nome_usuario|add_class:"input" }}
+                            </div>
+                            {% for error in form.nome_usuario.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.email.id_for_label }}">Email:</label>
+                            <div class="control has-icons-left">
+                                {{ form.email|add_class:"input"|attr:"type:email" }}
+                                <span class="icon is-small is-left"><i class="fas fa-envelope"></i></span>
+                            </div>
+                            {% for error in form.email.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.descricao.id_for_label }}">Sobre você (Opcional):</label>
+                            <div class="control">
+                                {{ form.descricao|add_class:"textarea"|attr:"rows:3" }}
+                            </div>
+                            {% for error in form.descricao.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.foto.id_for_label }}">Alterar Foto de Perfil:</label>
+                            <div class="control">
+                                <div class="file has-name is-fullwidth">
+                                    <label class="file-label">
+                                        {{ form.foto|add_class:"file-input" }}
+                                        <span class="file-cta">
+                                            <span class="file-icon">
+                                                <i class="fas fa-upload"></i>
+                                            </span>
+                                            <span class="file-label">
+                                                Escolha uma imagem…
+                                            </span>
+                                        </span>
+                                        <span class="file-name" id="file-name-foto-perfil-edit">
+                                            {% if usuario.foto %}{{ usuario.foto.name|cut:"fotos_perfil/" }}{% else %}Nenhum arquivo selecionado{% endif %}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            {% for error in form.foto.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        {# Campos de Senha (Opcionais para Edição) #}
+                        <div class="field">
+                            <label class="label" for="{{ form.senha.id_for_label }}">{{ form.senha.label }}:</label>
+                            <div class="control has-icons-left">
+                                {{ form.senha|add_class:"input"|attr:"type:password" }}
+                                <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                            </div>
+                            {% for error in form.senha.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label" for="{{ form.confirmar_senha.id_for_label }}">{{ form.confirmar_senha.label }}:</label>
+                            <div class="control has-icons-left">
+                                {{ form.confirmar_senha|add_class:"input"|attr:"type:password" }}
+                                <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                            </div>
+                            {% for error in form.confirmar_senha.errors %}
+                                <p class="help is-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="field mt-5">
+                            <div class="control has-text-centered">
+                                <button class="button is-primary is-medium button-success" type="submit">Salvar Alterações</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('#id_foto');
+            if (fileInput) {
+                fileInput.onchange = () => {
+                    if (fileInput.files.length > 0) {
+                        const fileNameSpan = document.querySelector('#file-name-foto-perfil-edit');
+                        fileNameSpan.textContent = fileInput.files[0].name;
+                    } else {
+                        // Se o usuário deselecionar, mostra o nome do arquivo atual ou "Nenhum arquivo"
+                        const fileNameSpan = document.querySelector('#file-name-foto-perfil-edit');
+                        const currentFileName = '{{ usuario.foto.name|cut:"fotos_perfil/" }}'; // Pega o nome do arquivo atual
+                        fileNameSpan.textContent = currentFileName ? currentFileName : 'Nenhum arquivo selecionado';
+                    }
+                };
+            }
+        });
+    </script>
+{% endblock %}

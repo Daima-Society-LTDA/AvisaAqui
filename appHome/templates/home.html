@@ -1,6 +1,6 @@
 {% extends 'template.html' %}
 {% load tz %}
-{% load static %} {# Necessário para suas imagens estáticas #}
+{% load static %}
 {% load widget_tweaks %}
 
 {% block titulo %} Página Inicial {% endblock %}
@@ -9,7 +9,7 @@
     <div class="container">
         <div class="columns is-centered">
             <div class="column is-half">
-                <h2 class="title is-4 has-text-centered">Cadastre uma ocorrência</h2>
+                <h2 class="title is-4 has-text-centered mt-6">Cadastre uma ocorrência</h2>
                 <div class="box">
                     <form action="{% url 'home' %}" method="POST">
                         {% csrf_token %}
@@ -49,7 +49,7 @@
                         </div>
                         <div class="field">
                             <div class="control">
-                                <button type="submit" class="button is-primary is-fullwidth">Publicar</button>
+                                <button type="submit" class="button is-primary is-fullwidth button-success">Publicar</button>
                             </div>
                         </div>
                     </form> 

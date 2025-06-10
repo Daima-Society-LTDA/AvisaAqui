@@ -1,4 +1,4 @@
-from appHome.forms import UsuarioForm, UsuarioLoginForm, OcorrenciaForm, ComentarioForm
+from appHome.forms import UsuarioEditForm, UsuarioForm, UsuarioLoginForm, OcorrenciaForm, ComentarioForm
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_GET 
@@ -63,7 +63,9 @@ def login_view(request):
             try:
                 usuario_login = Usuario.objects.get(email=_email, senha=_senha)
                 if usuario_login is not None:
-                    request.session.set_expiry(timedelta(minutes=15))
+                    request.session.set_expiry(timedelta(minutes=30))
+                    request.session['cd_usuario'] = usuario_login.id
+                    request.session['descricao'] = usuario_login.descricao
                     request.session['email'] = _email
                     request.session['nome'] = usuario_login.nome_usuario
                     if usuario_login.foto:
@@ -131,4 +133,93 @@ def adicionar_comentario(request, ocorrencia_id):
         }
         return JsonResponse(response_data)
     else:
-        return JsonResponse({'success': False, 'errors': form_comentario.errors.as_json()}, status=400) # Retorna erros do formulário
+        return JsonResponse({'success': False, 'errors': form_comentario.errors.as_json()}, status=400)
+    
+def perfil(request, cd_usuario):
+    if 'email' in request.session:
+        usuario_logado = Usuario.objects.get(id=cd_usuario)
+
+        if usuario_logado.foto:
+            foto_url = usuario_logado.foto.url
+        else:
+            foto_url = static('/img/icon-user.png')
+        
+        dados = {
+            'nome' : usuario_logado.nome_usuario,
+            'email' : usuario_logado.email,
+            'descricao' : usuario_logado.descricao,
+            'foto' : foto_url
+        }
+        print(dados['foto'])
+        return render(request, "perfil.html", dados)
+
+    return redirect("home")
+
+def editar_perfil(request, cd_usuario):
+    if 'email' not in request.session:
+        return redirect("login")
+
+    try:
+        usuario_logado = Usuario.objects.get(email=request.session['email'])
+    except Usuario.DoesNotExist:
+        request.session.flush()
+        return redirect('login')
+
+    if usuario_logado.id != cd_usuario:
+        return redirect("home")
+
+    if request.method == 'POST':
+        form = UsuarioEditForm(request.POST, request.FILES, instance=usuario_logado)
+        if form.is_valid():
+            usuario = form.save(commit=False)
+            nova_senha = form.cleaned_data.get('senha')
+            if nova_senha:
+                usuario.senha = nova_senha
+
+            usuario.save()
+
+            request.session['descricao'] = usuario.descricao
+            request.session['nome'] = usuario.nome_usuario
+            if usuario.foto:
+                request.session["foto_perfil_url"] = usuario.foto.url
+            else:
+                request.session["foto_perfil_url"] = static('img/icon-user.png')
+
+            return redirect('perfil', cd_usuario=usuario.id)
+    else:
+        form = UsuarioEditForm(instance=usuario_logado)
+
+    if usuario_logado.foto:
+        foto_url = usuario_logado.foto.url
+    else:
+        foto_url = static('img/icon-user.png')
+
+    dados = {
+        'form': form,
+        'usuario': usuario_logado,
+        'foto_perfil_url': foto_url,
+    }
+    return render(request, 'editar-perfil.html', dados)
+
+def excluir_conta(request, cd_usuario):
+    if 'email' not in request.session:
+
+        return redirect("login")
+    try:
+        usuario_logado = Usuario.objects.get(email=request.session['email'])
+    except Usuario.DoesNotExist:
+        request.session.flush()
+        
+        return redirect('login')
+
+    if usuario_logado.id != cd_usuario:
+        messages.error(request, "Você não tem permissão para excluir esta conta.")
+        return redirect("home")
+
+    if request.method == 'POST':
+        usuario_logado.delete()
+        
+        request.session.flush()
+        
+        return redirect('login')
+    return redirect('perfil', cd_usuario=cd_usuario)

@@ -5,16 +5,14 @@
 {% block titulo %} Login {% endblock %}
 
 {% block conteudo %}
-    <div class="container"> {# Centraliza o conteúdo e limita a largura #}
-        <div class="columns is-centered"> {# Centraliza a coluna do formulário #}
-            {# Define a largura da coluna: metade da tela em desktop, 2/3 em tablet, tela cheia em mobile #}
+    <div class="container mt-6 mb-6">
+        <div class="columns is-centered">
             <div class="column is-half-desktop is-two-thirds-tablet is-full-mobile">
-                <h1 class="title is-3 has-text-centered">Login</h1> {# Título Bulma, centralizado #}
-                <div class="box"> {# Adiciona um "box" visualmente agradável ao redor do formulário #}
+                <h1 class="title is-3 has-text-centered mt-6">Login</h1>
+                <div class="box">
                     <form action="{% url 'login' %}" method="post">
                         {% csrf_token %}
 
-                        {# Lidar com erros de formulário (erros que não são de campos específicos) #}
                         {% if formLogin.non_field_errors %}
                             <div class="notification is-danger">
                                 {% for error in formLogin.non_field_errors %}

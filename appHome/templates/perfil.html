@@ -1,0 +1,86 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block titulo %} Meu Perfil {% endblock %}
+
+{% block conteudo %}
+    {# modal de confirmação de excluir conta #}
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Confirmar Exclusão de Conta</p>
+                <button class="delete" aria-label="close" id="closeModalButton"></button>
+            </header>
+            <section class="modal-card-body">
+                <p>Você tem certeza que deseja **excluir sua conta permanentemente**?</p>
+                <p>Esta ação não pode ser desfeita.</p>
+            </section>
+            <footer class="modal-card-foot">
+                <form action="{% url 'excluir_conta' request.session.cd_usuario %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="button is-danger">Sim, Excluir Minha Conta</button>
+                </form>
+                <button class="button" id="cancelModalButton">Cancelar</button>
+            </footer>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="columns is-centered mt-6 mb-6">
+            <div class="column is-two-thirds-desktop is-two-thirds-tablet is-full-mobile">
+                <div class="box p-5 has-text-centered">
+                    <h2 class="title is-3 mt-6">Perfil de Usuário</h2>
+                    <figure class="image is-128x128 mx-auto my-4 profile-pic">
+                        <img class="is-rounded has-background-white" src="{{ foto }}" alt="">
+                    </figure>
+
+                    <p class="is-size-5 mb-2">{{ nome }}</p>
+                    <p class="is-size-5 mb-6">{{ email }}</p>
+                    {% if descricao %}
+                        <p class="is-size-5">{{ descricao }}</p>
+                    {% else %}
+                        <p class="is-size-5">Nenhuma descrição informada.</p>
+                    {% endif %}
+
+                    <div class="mt-5">
+                        <a href="{% url 'editar_perfil' request.session.cd_usuario %}" class="button is-info button-second">Editar Perfil</a>
+                    </div>
+                    <div class="mt-5">
+                        <a id="deleteAccountButton" href="{% url 'excluir_conta' request.session.cd_usuario %}" class="button is-info button-third ">Excluir Perfil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const deleteButton = document.getElementById('deleteAccountButton');
+            const modal = document.getElementById('deleteConfirmModal');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const cancelModalButton = document.getElementById('cancelModalButton');
+
+            if (deleteButton) {
+                deleteButton.addEventListener('click', (event) => {
+                    event.preventDefault(); 
+                    modal.classList.add('is-active');
+                });
+            }
+
+            const close = () => {
+                modal.classList.remove('is-active');
+            };
+
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', close);
+            }
+            if (cancelModalButton) {
+                cancelModalButton.addEventListener('click', close);
+            }
+
+            if (modal.querySelector('.modal-background')) {
+                modal.querySelector('.modal-background').addEventListener('click', close);
+            }
+        });
+    </script>
+{% endblock %}
