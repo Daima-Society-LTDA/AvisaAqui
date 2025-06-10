@@ -6,40 +6,54 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.templatetags.static import static
 from django.utils import timezone
+from rest_framework import generics
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+from appHome.serializers import OcorrenciaSerializer
 
 from .models import Usuario, Ocorrencia
 
 def home(request):
-    form_ocorrencia = OcorrenciaForm()
     usuario_logado = None
     if 'email' in request.session:
         try:
             usuario_logado = Usuario.objects.get(email=request.session['email'])
         except Usuario.DoesNotExist:
             request.session.flush()
-            return redirect('login')
+
+    form_ocorrencia = OcorrenciaForm()
 
     if request.method == 'POST':
-        if 'titulo' in request.POST and 'descricao' in request.POST: 
+        if usuario_logado:
             form_ocorrencia = OcorrenciaForm(request.POST)
             if form_ocorrencia.is_valid():
-                if usuario_logado:
-                    ocorrencia = form_ocorrencia.save(commit=False)
-                    ocorrencia.usuario = usuario_logado
-                    ocorrencia.save()
-                    
-                    return redirect('home')
-                else:
-                    form_ocorrencia.add_error(None, "Você precisa estar logado para postar uma ocorrência.")
-            
-    ocorrencias = Ocorrencia.objects.all().order_by('-data_ocorrencia')
-    
+                ocorrencia = form_ocorrencia.save(commit=False)
+                ocorrencia.usuario = usuario_logado
+                ocorrencia.save()
+                return redirect('home')
+        else:
+            return redirect('login')
+
+
+    todas_ocorrencias = Ocorrencia.objects.all().order_by('-data_ocorrencia') 
+
+    paginator = Paginator(todas_ocorrencias, 5) 
+
+    page = request.GET.get('page')
+
+    try:
+        ocorrencias = paginator.page(page)
+    except PageNotAnInteger:
+        ocorrencias = paginator.page(1)
+    except EmptyPage:
+        ocorrencias = paginator.page(paginator.num_pages)
+
     dados = {
         'form_ocorrencia': form_ocorrencia,
-        'usuario_logado': usuario_logado,
         'ocorrencias': ocorrencias,
+        'usuario_logado': usuario_logado
     }
-    return render(request, 'home.html', dados)
+    return render(request, "home.html", dados)
 
 def cadastrar_usuario(request):
     if request.method == 'POST':
@@ -223,3 +237,24 @@ def excluir_conta(request, cd_usuario):
         
         return redirect('login')
     return redirect('perfil', cd_usuario=cd_usuario)
+
+# API
+# View para listar todas as ocorrências
+class OcorrenciaListAPIView(generics.ListAPIView):
+    queryset = Ocorrencia.objects.all()
+    serializer_class = OcorrenciaSerializer
+
+# View para pegar uma ocorrência específica pelo ID
+class OcorrenciaDetailAPIView(generics.RetrieveAPIView):
+    queryset = Ocorrencia.objects.all()
+    serializer_class = OcorrenciaSerializer
+    lookup_field = 'id'
+
+# POR DATA
+class OcorrenciaDoDiaListAPIView(generics.ListAPIView):
+    serializer_class = OcorrenciaSerializer
+
+    def get_queryset(self):
+        today = timezone.now().date()
+        queryset = Ocorrencia.objects.filter(data_ocorrencia__date=today)
+        return queryset

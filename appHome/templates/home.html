@@ -105,202 +105,40 @@
                 <p class="has-text-centered is-size-5">Nenhuma ocorrência encontrada ainda. Seja o primeiro a postar!</p>
             {% endfor %}
         </div>
-    </div>
 
-    <div id="comentarios-modal" class="modal">
-        <div class="modal-background"></div>
-        <div class="modal-card is-7-desktop is-8-tablet is-fullwidth-mobile">
-            <header class="modal-card-head">
-                <p class="modal-card-title ">Comentários da Ocorrência</p>
-                <button class="delete" aria-label="close"></button>
-            </header>
-            <section class="modal-card-body" style="max-height: 70vh; overflow-y: auto;">
-                <div id="comentarios-list">
-                    {# Comentários serão carregados aqui via JavaScript #}
-                    <p class="has-text-centered">Carregando comentários...</p>
-                </div>
-            </section>
-            <footer class="modal-card-foot">
-                {% if usuario_logado %}
-                    <form id="form-adicionar-comentario" style="width: 100%;">
-                        {% csrf_token %}
-                        <input type="hidden" name="ocorrencia_id_modal" id="ocorrencia-id-modal">
-                        <div class="field is-grouped is-grouped-multiline is-fullwidth">
-                            <div class="control is-expanded">
-                                <textarea class="textarea" name="descricao_comentario" placeholder="Adicione um comentário..."></textarea>
-                            </div>
-                            <div class="control">
-                                <button type="submit" class="button is-primary">Comentar</button>
-                            </div>
-                        </div>
-                    </form>
+        {# --- NAVEGAÇÃO DA PAGINAÇÃO AQUI --- #}
+        {% if ocorrencias.has_other_pages %}
+            <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+                {% if ocorrencias.has_previous %}
+                    <a class="pagination-previous" href="?page=1">Primeira</a>
+                    <a class="pagination-previous" href="?page={{ ocorrencias.previous_page_number }}">Anterior</a>
                 {% else %}
-                    <p class="has-text-centered">Você precisa estar logado para adicionar comentários. <a href="{% url 'login' %}">Faça Login</a></p>
+                    <a class="pagination-previous is-disabled" disabled>Primeira</a>
+                    <a class="pagination-previous is-disabled" disabled>Anterior</a>
                 {% endif %}
-            </footer>
-        </div>
+
+                {% if ocorrencias.has_next %}
+                    <a class="pagination-next" href="?page={{ ocorrencias.next_page_number }}">Próxima</a>
+                    <a class="pagination-next" href="?page={{ ocorrencias.paginator.num_pages }}">Última</a>
+                {% else %}
+                    <a class="pagination-next is-disabled" disabled>Próxima</a>
+                    <a class="pagination-next is-disabled" disabled>Última</a>
+                {% endif %}
+
+                <ul class="pagination-list">
+                    {% for i in ocorrencias.paginator.page_range %}
+                        {% if ocorrencias.number == i %}
+                            <li><a class="pagination-link is-current" aria-label="Page {{ i }}" aria-current="page">{{ i }}</a></li>
+                        {% else %}
+                            <li><a class="pagination-link" href="?page={{ i }}" aria-label="Go to page {{ i }}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% endif %}
+        {# --- FIM DA NAVEGAÇÃO DA PAGINAÇÃO --- #}
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const comentariosModal = document.getElementById('comentarios-modal');
-            const modalBackground = comentariosModal.querySelector('.modal-background');
-            const modalCloseBtn = comentariosModal.querySelector('.delete');
-            const comentariosButtons = document.querySelectorAll('.comentarios-btn');
-            const comentariosList = document.getElementById('comentarios-list');
-            const formAdicionarComentario = document.getElementById('form-adicionar-comentario');
-            const ocorrenciaIdModalInput = document.getElementById('ocorrencia-id-modal');
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value; // Pega o CSRF token
+    {# ... Seu modal de comentários e script JS aqui ... #}
 
-            let currentOcorrenciaId = null; // Para armazenar o ID da ocorrência atual
-
-            // Função para abrir o modal e carregar comentários
-            async function openModal(ocorrenciaId) {
-                currentOcorrenciaId = ocorrenciaId;
-                if (ocorrenciaIdModalInput) { // Verifica se o elemento existe
-                    ocorrenciaIdModalInput.value = ocorrenciaId;
-                }
-
-                comentariosModal.classList.add('is-active');
-                comentariosList.innerHTML = '<p class="has-text-centered">Carregando comentários...</p>'; // Mensagem de carregamento
-
-                try {
-                    const response = await fetch(`/ocorrencias/${ocorrenciaId}/comentarios/`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    if (data.comentarios && data.comentarios.length > 0) {
-                        comentariosList.innerHTML = ''; // Limpa a mensagem de carregamento
-                        data.comentarios.forEach(comentario => {
-                            const comentarioElement = `
-                                <article class="media mb-4">
-                                    <figure class="media-left ">
-                                        <p class="image is-48x48">
-                                            <img class="is-rounded has-background-white" src="${comentario.usuario_foto_url}" alt="Foto de perfil">
-                                        </p>
-                                    </figure>
-                                    <div class="media-content">
-                                        <div class="content">
-                                            <p>
-                                                <strong>${comentario.usuario_nome}</strong>
-                                                <br>
-                                                ${comentario.descricao}
-                                                <br>
-                                                <small class="has-text-grey">${comentario.data}</small>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </article>
-                            `;
-                            comentariosList.insertAdjacentHTML('beforeend', comentarioElement);
-                        });
-                    } else {
-                        comentariosList.innerHTML = '<p class="has-text-centered">Nenhum comentário ainda. Seja o primeiro!</p>';
-                    }
-                } catch (error) {
-                    console.error('Erro ao carregar comentários:', error);
-                    comentariosList.innerHTML = '<p class="has-text-centered has-text-danger">Erro ao carregar comentários.</p>';
-                }
-            }
-
-            // Função para fechar o modal
-            function closeModal() {
-                comentariosModal.classList.remove('is-active');
-                comentariosList.innerHTML = ''; 
-                const comentarioTextarea = formAdicionarComentario ? formAdicionarComentario.querySelector('textarea[name="descricao_comentario"]') : null;
-                if (comentarioTextarea) {
-                    comentarioTextarea.value = '';
-                }
-                currentOcorrenciaId = null;
-            }
-
-            // Event Listeners para abrir/fechar o modal
-            modalBackground.addEventListener('click', closeModal);
-            modalCloseBtn.addEventListener('click', closeModal);
-
-            comentariosButtons.forEach(button => {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault(); // Evita que o link tente navegar
-                    const ocorrenciaId = this.dataset.ocorrenciaId;
-                    openModal(ocorrenciaId);
-                });
-            });
-
-            // Lidar com o envio do formulário de adicionar comentário
-            if (formAdicionarComentario) {
-                formAdicionarComentario.addEventListener('submit', async function(event) {
-                    event.preventDefault(); // Evita o envio padrão do formulário
-
-                    const comentarioTextarea = this.querySelector('textarea[name="descricao_comentario"]');
-                    const descricao = comentarioTextarea.value.trim();
-
-                    if (!descricao) {
-                        alert('Por favor, escreva um comentário.');
-                        return;
-                    }
-
-                    if (!currentOcorrenciaId) {
-                        alert('Erro: ID da ocorrência não encontrado para adicionar comentário.');
-                        return;
-                    }
-
-                    const formData = new FormData();
-                    formData.append('descricao_comentario', descricao);
-                    formData.append('csrfmiddlewaretoken', csrfToken); // Adiciona o CSRF token
-
-                    try {
-                        const response = await fetch(`/ocorrencias/${currentOcorrenciaId}/comentar/`, {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok && data.success) {
-                            // Adiciona o novo comentário à lista no modal
-                            const newComentarioElement = `
-                                <article class="media mb-4">
-                                    <figure class="media-left">
-                                        <p class="image is-48x48">
-                                            <img class="is-rounded" src="${data.comentario.usuario_foto_url}" alt="Foto de perfil">
-                                        </p>
-                                    </figure>
-                                    <div class="media-content">
-                                        <div class="content">
-                                            <p>
-                                                <strong>${data.comentario.usuario_nome}</strong>
-                                                <br>
-                                                ${data.comentario.descricao}
-                                                <br>
-                                                <small class="has-text-grey">${data.comentario.data}</small>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </article>
-                            `;
-                            // Se a mensagem "Nenhum comentário ainda." estiver presente, remova-a
-                            if (comentariosList.querySelector('p.has-text-centered:not(.has-text-danger)')) {
-                                comentariosList.innerHTML = '';
-                            }
-                            comentariosList.insertAdjacentHTML('beforeend', newComentarioElement);
-                            comentarioTextarea.value = ''; // Limpa o textarea
-                            
-                            // Atualiza a contagem de comentários na ocorrência principal (opcional, requer JS mais complexo ou recarga)
-                            // Por simplicidade, isso não será atualizado dinamicamente aqui, mas o backend estará correto.
-                            // Para atualizar, você precisaria de um elemento específico para a contagem no card da ocorrência.
-
-                        } else {
-                            alert('Erro ao adicionar comentário: ' + (data.errors ? JSON.parse(data.errors).descricao_comentario : ''));
-                            console.error('Erro na resposta:', data);
-                        }
-                    } catch (error) {
-                        console.error('Erro na requisição AJAX para adicionar comentário:', error);
-                        alert('Ocorreu um erro ao tentar adicionar o comentário.');
-                    }
-                });
-            }
-        });
-    </script>
 {% endblock %}

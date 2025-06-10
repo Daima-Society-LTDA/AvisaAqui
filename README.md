@@ -21,6 +21,10 @@ Este projeto utiliza Django como tecnologia principal e também ambiente virtual
         ```
         python3 -m pip install pillow
         ```
+    * Djangorestframework (api)
+        ```
+        pip install djangorestframework
+        ```
 * Rodar o projeto
     ```
     python3 manage.py runserver

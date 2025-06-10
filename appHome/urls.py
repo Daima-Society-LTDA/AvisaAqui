@@ -11,5 +11,8 @@ urlpatterns = [
     path('ocorrencias/<int:ocorrencia_id>/comentar/', views.adicionar_comentario, name='adicionar_comentario'),
     path('perfil/<int:cd_usuario>', views.perfil, name="perfil"),
     path('editar-perfil/<int:cd_usuario>', views.editar_perfil, name="editar_perfil"),
-    path('excluir-conta/<int:cd_usuario>', views.excluir_conta, name="excluir_conta")
+    path('excluir-conta/<int:cd_usuario>', views.excluir_conta, name="excluir_conta"),
+    path('api/ocorrencias/', views.OcorrenciaListAPIView.as_view(), name='ocorrencia_api_list'),
+    path('api/ocorrencias/<int:id>/', views.OcorrenciaDetailAPIView.as_view(), name='ocorrencia_api_detail'),
+    path('api/ocorrencias/hoje/', views.OcorrenciaDoDiaListAPIView.as_view(), name='ocorrencias_hoje_api'),
 ]
