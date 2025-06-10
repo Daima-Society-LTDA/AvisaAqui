@@ -1,15 +1,65 @@
 {% extends "template.html" %}
+{% load static %}
+{% load widget_tweaks %}
 
 {% block titulo %} Login {% endblock %}
 
 {% block conteudo %}
-    <h1 class="titulo">Login</h1>
-    <form action="{% url 'login' %}" method="post" class="form">
-            {% csrf_token %}
-            {{ formLogin.as_p }}
-            <button type="submit" class="form-button">
-                Entrar
-            </button>
-    </form>
+    <div class="container"> {# Centraliza o conteúdo e limita a largura #}
+        <div class="columns is-centered"> {# Centraliza a coluna do formulário #}
+            {# Define a largura da coluna: metade da tela em desktop, 2/3 em tablet, tela cheia em mobile #}
+            <div class="column is-half-desktop is-two-thirds-tablet is-full-mobile">
+                <h1 class="title is-3 has-text-centered">Login</h1> {# Título Bulma, centralizado #}
+                <div class="box"> {# Adiciona um "box" visualmente agradável ao redor do formulário #}
+                    <form action="{% url 'login' %}" method="post">
+                        {% csrf_token %}
 
+                        {# Lidar com erros de formulário (erros que não são de campos específicos) #}
+                        {% if formLogin.non_field_errors %}
+                            <div class="notification is-danger">
+                                {% for error in formLogin.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {# Campo de Email #}
+                        <div class="field">
+                            <label class="label">{{ formLogin.email.label }}</label>
+                            <div class="control">
+                                {# Renderiza o campo de email com a classe 'input' do Bulma #}
+                                {{ formLogin.email|add_class:"input"|attr:"type:email" }}
+                            </div>
+                            {# Exibe erros específicos do campo #}
+                            {% if formLogin.email.errors %}
+                                <p class="help is-danger">{{ formLogin.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        {# Campo de Senha #}
+                        <div class="field">
+                            <label class="label">{{ formLogin.senha.label }}</label>
+                            <div class="control">
+                                {# Renderiza o campo de senha com a classe 'input' do Bulma #}
+                                {{ formLogin.senha|add_class:"input"|attr:"type:password" }}
+                            </div>
+                            {# Exibe erros específicos do campo #}
+                            {% if formLogin.senha.errors %}
+                                <p class="help is-danger">{{ formLogin.senha.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        {# Botão de Submissão #}
+                        <div class="field">
+                            <div class="control">
+                                <button type="submit" class="button is-primary is-fullwidth"> {# Classes do Bulma para botão #}
+                                    Entrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div> {# Fim .box #}
+            </div> {# Fim .column #}
+        </div> {# Fim .columns #}
+    </div> {# Fim .container #}
 {% endblock %}

@@ -65,26 +65,28 @@
                 <div class="box mb-5">
                     <article class="media">
                         <div class="media-left">
-                            <figure class="image is-64x64">
+                            <figure class="image is-128x128">
                                 {% if ocorrencia.usuario.foto %}
                                     <img class="is-rounded" src="{{ ocorrencia.usuario.foto.url }}" alt="Foto de perfil de {{ ocorrencia.usuario.nome_usuario }}">
                                 {% else %}
-                                    <img class="is-rounded" src="{% static 'img/icon-user.png' %}" alt="Foto padrão"> 
+                                    <img class="is-rounded has-background-white" src="{% static 'img/icon-user.png' %}" alt="Foto padrão"> 
                                 {% endif %}
                             </figure>
                         </div>
                         <div class="media-content">
                             <div class="content">
+                                <small>@{{ ocorrencia.usuario.nome_usuario }}</small> 
                                 <p>
-                                    <strong>{{ ocorrencia.titulo }}</strong> <small>@{{ ocorrencia.usuario.nome_usuario }}</small> 
+                                    <strong>{{ ocorrencia.titulo }}</strong> 
                                     <br>
                                     {{ ocorrencia.descricao|linebreaksbr }}
                                     <br>
-                                    <small>Postado em: {{ ocorrencia.data_ocorrencia|localtime|date:"d/m/Y H:i" }} ({{ timezone_name }})</small>
-                                    {% if ocorrencia.bairro %}
-                                        <small>&bull; Bairro: {{ ocorrencia.bairro.nome }}</small>
-                                    {% endif %}
+                                    <small>Postado em: {{ ocorrencia.data_ocorrencia|localtime|date:"d/m/Y H:i" }}</small>
+                                    
                                 </p>
+                                {% if ocorrencia.bairro %}
+                                    <small>&bull; Bairro: {{ ocorrencia.bairro.nome }}</small>
+                                {% endif %}
                             </div>
                             <nav class="level is-mobile">
                                 <div class="level-left">
@@ -174,9 +176,9 @@
                         data.comentarios.forEach(comentario => {
                             const comentarioElement = `
                                 <article class="media mb-4">
-                                    <figure class="media-left">
+                                    <figure class="media-left ">
                                         <p class="image is-48x48">
-                                            <img class="is-rounded" src="${comentario.usuario_foto_url}" alt="Foto de perfil">
+                                            <img class="is-rounded has-background-white" src="${comentario.usuario_foto_url}" alt="Foto de perfil">
                                         </p>
                                     </figure>
                                     <div class="media-content">

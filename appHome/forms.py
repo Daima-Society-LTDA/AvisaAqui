@@ -36,11 +36,11 @@ class UsuarioForm(forms.ModelForm):
 class UsuarioLoginForm(forms.Form):
     email = forms.EmailField(
         label="Email",
-        widget=forms.EmailInput(attrs={'type': 'email', 'class': 'input'})
+        widget=forms.EmailInput(attrs={'class': 'input'})
     )
     senha = forms.CharField(
         label="Senha",
-        widget=forms.PasswordInput(attrs={'type': 'password', 'class': 'input'})
+        widget=forms.PasswordInput(attrs={'class': 'input'})
     )
 
 class OcorrenciaForm(forms.ModelForm):
